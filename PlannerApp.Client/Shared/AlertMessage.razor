@@ -1,0 +1,46 @@
+﻿@if (!string.IsNullOrEmpty(Message))
+{
+    <BSAlert Color="color" IsDismissible="true" OnDismiss="HideMessage">
+        @Message
+    </BSAlert>
+}
+
+
+@code {
+    [Parameter]
+    public string Message { get; set; }
+    BlazorStrap.Color color = new Color();
+
+    private Models.AlertMessageType messageType;
+
+    [Parameter]
+    public Models.AlertMessageType MessageType
+    {
+        get => messageType;
+        set
+        {
+            messageType = value;
+            switch (messageType)
+            {
+                case Models.AlertMessageType.Danger:
+                    color = Color.Danger;
+                    break;
+                case Models.AlertMessageType.Warning:
+                    color = Color.Warning;
+                    break;
+                case Models.AlertMessageType.Success:
+                    color = Color.Success;
+                    break;
+                default:
+                    break;
+
+            }
+        }
+    }
+
+
+    void HideMessage()
+    {
+        Message = string.Empty;
+    }
+}
