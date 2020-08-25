@@ -12,7 +12,7 @@ namespace PlannerApp.Shared.Models
 
         public string[] Errors { get; set; }
 
-        public string userInfo { get; set; }
+        public Dictionary<string,string> userInfo { get; set; }
 
         public DateTime? ExpireDate { get; set; }
 

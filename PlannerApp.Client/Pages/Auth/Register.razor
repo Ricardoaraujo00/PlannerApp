@@ -3,7 +3,7 @@
 @using PlannerApp.Shared.Models
 
 @inject AuthenticationService authService 
-@inject NavigationManager navigation
+@inject NavigationManager navigationManager
 
 <div class="row">
     <div class="col-12">
@@ -35,7 +35,7 @@
                               Disabled="isBusy" />
                 <RadzenButton ButtonType="Radzen.ButtonType.Button" Text="Login"
                               ButtonStyle="Radzen.ButtonStyle.Secondary" Class="btn-block mr-2"
-                              Disabled="isBusy" />
+                              Disabled="isBusy" Click="GoToLogin" />
             </RadzenCard>
         </EditForm>
     </div>
@@ -66,5 +66,10 @@
 
         isBusy = false;
 
+    }
+
+    void GoToLogin()
+    {
+        navigationManager.NavigateTo("/auth/login");
     }
 }
