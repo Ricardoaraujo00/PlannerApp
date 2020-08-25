@@ -12,6 +12,12 @@
         <EditForm Model="model" OnValidSubmit="LoginUser">
             <RadzenCard>
                 <AlertMessage Message="@message" MessageType="@messageType" />
+                <ul>
+                    @foreach (var item in userInfo)
+                    {
+                        <li>@item.Key : @item.Value</li>
+                    }
+                </ul>
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
@@ -40,28 +46,39 @@
     string message = string.Empty;
     Models.AlertMessageType messageType = Models.AlertMessageType.Success;
 
+    Dictionary<string, string> userInfo = new Dictionary<string, string>();
+
     public async Task LoginUser()
     {
-        //isBusy = true;
-        //var result = await authService.RegisterUserAsync(model);
-        //if (result.isSuccess)
-        //{
-        //    message = result.message;
-        //    messageType = Models.AlertMessageType.Success;
-        //}
-        //else
-        //{
-        //    message = result.Errors.FirstOrDefault() ?? result.message;
-        //    messageType = Models.AlertMessageType.Danger;
-        //}
+        isBusy = true;
+        var result = await authService.LoginUserAsync(model);
+        if (result.isSuccess)
+        {
+            message = "Welcome to PlannerApp";
+            userInfo = result.userInfo;
+            messageType = Models.AlertMessageType.Success;
+        }
+        else
+        {
+            //if(result.Errors.Length != 0)
+            //{
+            //    message = result.Errors.FirstOrDefault();
+            //}
+            //else
+            //{
+            //    message = result.message;
+            //}
+            message = result.Errors != null ? result.Errors.FirstOrDefault() : result.message;
+            messageType = Models.AlertMessageType.Danger;
+        }
 
 
-        //isBusy = false;
+        isBusy = false;
 
     }
 
     void GoToRegister()
     {
-        navigationManager.NavigateTo("/auth/register"); 
+        navigationManager.NavigateTo("/auth/register");
     }
 }
