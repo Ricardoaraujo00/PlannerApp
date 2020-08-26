@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using PlannerApp.Shared.Services;
 using BlazorStrap;
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace PlannerApp.Client
 {
@@ -27,6 +28,9 @@ namespace PlannerApp.Client
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddBootstrapCss();
+            builder.Services.AddOptions();
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddScoped<AuthenticationStateProvider, LocalAuthenticationStateProvider>();
             await builder.Build().RunAsync();
         }
     }
