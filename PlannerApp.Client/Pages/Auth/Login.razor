@@ -5,6 +5,7 @@
 
 @inject AuthenticationService authService
 @inject NavigationManager navigationManager
+@inject ILocalStorageService storageService
 
 <div class="row">
     <div class="col-12">
@@ -12,12 +13,7 @@
         <EditForm Model="model" OnValidSubmit="LoginUser">
             <RadzenCard>
                 <AlertMessage Message="@message" MessageType="@messageType" />
-                <ul>
-                    @foreach (var item in userInfo)
-                    {
-                        <li>@item.Key : @item.Value</li>
-                    }
-                </ul>
+ 
                 <DataAnnotationsValidator />
                 <ValidationSummary />
 
@@ -55,8 +51,17 @@
         if (result.isSuccess)
         {
             message = "Welcome to PlannerApp";
-            userInfo = result.userInfo;
             messageType = Models.AlertMessageType.Success;
+
+            var userInfo = new PlannerApp.Client.Models.LocalUserInfo()
+            {
+                AccessToken = result.message,
+                Email = result.userInfo["Email"],
+                FirstName = result.userInfo["FirstName"],
+                LastName = result.userInfo["LastName"],
+                Id = result.userInfo[System.Security.Claims.ClaimTypes.NameIdentifier]
+            };
+            await storageService.SetItemAsync("User", userInfo);
         }
         else
         {
