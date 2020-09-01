@@ -1,12 +1,8 @@
 using System;
 using System.Net.Http;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Text;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using PlannerApp.Shared.Services;
 using BlazorStrap;
 using Blazored.LocalStorage;
@@ -24,6 +20,10 @@ namespace PlannerApp.Client
             builder.Services.AddScoped<AuthenticationService>(s =>
             {
                 return new AuthenticationService(URL);
+            });
+            builder.Services.AddScoped<PlansService>(s =>
+            {
+                return new PlansService(URL);
             });
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

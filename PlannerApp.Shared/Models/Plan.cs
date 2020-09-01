@@ -1,4 +1,4 @@
-﻿namespace PlannerApp.Client.Models
+﻿namespace PlannerApp.Shared.Models
 {
     public class Plan
     {
