@@ -19,7 +19,7 @@ namespace PlannerApp.Shared.Services
             _baseUrl = url;
         }
 
-        private string AccessToken
+        public string AccessToken
         {
             get => client.AccessToken;
             set
