@@ -1,5 +1,5 @@
 ﻿@page "/plans"
-@page "/plans/{pageNumber}"
+@page "/plans/{pageNumber:int}"
 
 @inject PlansService plansService
 @attribute [Authorize]
@@ -19,8 +19,8 @@ else
         @foreach (var plan in plans)
         {
             <div class="col-4">
-                <RadzenCard>
-                    <img src="@plan.CoverPath" style="height:100px;margin:5px" />
+                <RadzenCard Style="margin:10px">
+                    <img src="@plan.CoverPath" style="width:90%;margin:5px" />
                     <h2>@plan.Title</h2>
                     <p>@plan.Description</p>
                     <div class="row">
@@ -38,7 +38,20 @@ else
     </div>
     <hr />
     <div class="row">
-        <RadzenButton ButtonStyle="Radzen.ButtonStyle.Info" Text="1" Style="margin:8px;" />
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            int page = i;
+            if (page == PageNumber)
+            {
+                <RadzenButton ButtonStyle="Radzen.ButtonStyle.Info" Text="@i.ToString()" Click="async () => await moveToPageAsync(page)" Disabled="true" Style="margin:8px;" />
+            }
+            else
+            {
+                <RadzenButton ButtonStyle="Radzen.ButtonStyle.Info" Text="@i.ToString()" Click="async () => await moveToPageAsync(page)" Style="margin:8px;" />
+            }
+
+        }
+
     </div>
 
 }
@@ -46,13 +59,15 @@ else
 
 @code {
     [Parameter]
-    public int? pageNumber { get; set; }
+    public int? PageNumber { get; set; }
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
 
     bool isBusy = false;
     List<Plan> plans = new List<Plan>();
+
+    int totalPages = 1;
 
     async Task getPlansAsync()
     {
@@ -61,10 +76,22 @@ else
         var userState = authenticationState.Result;
         plansService.AccessToken = userState.User.FindFirst("AccessToken").Value;
 
-        if (pageNumber == null) pageNumber = 1;
-        var result = await plansService.GetAllPlansByPageAsync(pageNumber.Value);
+        if (PageNumber == null) PageNumber = 1;
+        var result = await plansService.GetAllPlansByPageAsync(PageNumber.Value);
+
+        //50 plans | pagesize = 10 => 5 pages
+        //54 plans | pagesize = 10 => 5 pages -> page = 4plans
+        totalPages = result.Count / result.PageSize;
+        if (result.Count % result.PageSize > 0) totalPages += 1;
+
         plans = result.Records.ToList();
         isBusy = false;
+    }
+
+    async Task moveToPageAsync(int pageNumber)
+    {
+        PageNumber = pageNumber;
+        await getPlansAsync();
     }
 
     protected override async Task OnInitializedAsync()
