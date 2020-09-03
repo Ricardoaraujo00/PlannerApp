@@ -4,7 +4,15 @@
 @inject PlansService plansService
 @attribute [Authorize]
 
-<h3>My Plans</h3>
+@if(string.IsNullOrWhiteSpace(Query))
+{
+    <h2>My Plans - Page: @PageNumber</h2>
+}
+else
+{
+    <h2>My Plans - Results for '@Query' - Page: @PageNumber</h2>
+}
+<h2>My Plans</h2>
 @if (isBusy)
 {
     <h2>Loading...</h2>
@@ -12,7 +20,7 @@
 else
 {
     <div class="row">
-        <RadzenTextBox Placeholder="SearchQuery" />
+        <RadzenTextBox Placeholder="SearchQuery" @bind-Value="Query"/><RadzenButton Text="Search" Click="async () => await getPlansAsync()"/>
     </div>
     <hr />
     <div class="row">
@@ -61,6 +69,9 @@ else
     [Parameter]
     public int? PageNumber { get; set; }
 
+    [Parameter]
+    public string Query { get; set; }
+
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
 
@@ -77,7 +88,13 @@ else
         plansService.AccessToken = userState.User.FindFirst("AccessToken").Value;
 
         if (PageNumber == null) PageNumber = 1;
-        var result = await plansService.GetAllPlansByPageAsync(PageNumber.Value);
+
+        PlansCollectionPagingResponse result;
+
+        if (string.IsNullOrWhiteSpace(Query))
+            result = await plansService.GetAllPlansByPageAsync(PageNumber.Value);
+        else
+            result = await plansService.SearchPlansByPageAsync(Query, PageNumber.Value);
 
         //50 plans | pagesize = 10 => 5 pages
         //54 plans | pagesize = 10 => 5 pages -> page = 4plans
