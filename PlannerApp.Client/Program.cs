@@ -7,6 +7,8 @@ using PlannerApp.Shared.Services;
 using BlazorStrap;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Tewr.Blazor.FileReader;
+using Microsoft.Extensions.Options;
 
 namespace PlannerApp.Client
 {
@@ -24,6 +26,10 @@ namespace PlannerApp.Client
             builder.Services.AddScoped<PlansService>(s =>
             {
                 return new PlansService(URL);
+            });
+            builder.Services.AddFileReaderService(Options =>
+            {
+                Options.UseWasmSharedBuffer = true;
             });
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

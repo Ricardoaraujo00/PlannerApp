@@ -41,11 +41,27 @@ namespace PlannerApp.Shared.Services
         /// <summary>
         /// Retrieve all the plans from the API with pagination
         /// </summary>
-        /// <param name="page"></param>
+        /// <param name="model"> object represents the plan to be added</param>
         /// <returns></returns>
         public async Task<PlansCollectionPagingResponse> SearchPlansByPageAsync(string query, int page=1)
         {
             var response = await client.GetProtectedAsync<PlansCollectionPagingResponse>($"{_baseUrl}/api/plans/search?query={query}&page={page}");
+            return response.Result;
+        }
+
+
+        /// <summary>
+        /// Post a plan to thr API
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public async Task<PlanSingleResponse> PostPlanAsync(PlanRequest model)
+        {
+            var response = await client.SendFormProtectedAsync<PlanSingleResponse>($"{_baseUrl}/api/plans",
+                ActionType.POST, new StringFormKeyValue("Title", model.Title),
+                new StringFormKeyValue("Description", model.Description),
+                new FileFormKeyValue("CoverFile", model.CoverFile, model.FileName));
+
             return response.Result;
         }
     }
