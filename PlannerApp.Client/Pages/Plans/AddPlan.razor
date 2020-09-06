@@ -1,7 +1,7 @@
-﻿@page "/plans/addplan"
+﻿@page "/plans/add"
 
 @inject PlansService plansService
-@inject Tewr.Blazor.FileReader.IFileReaderService fileReaderService
+@inject IFileReaderService fileReaderService
 @inject NavigationManager navigationManager
 
 @attribute [Authorize]
@@ -10,28 +10,34 @@
 
 <div class="row">
     <div class="col-6">
-        <EditForm Model="model">
+        <EditForm Model="model" OnValidSubmit="async () => await PostPlanAsync()">
             <RadzenCard>
                 <AlertMessage Message="@message" MessageType="@messageType" />
                 <DataAnnotationsValidator />
                 <ValidationSummary />
-                <RadzenTextBox Placeholder="Title" Style="margin:10px;" />
-                <Radzen.Blazor.RadzenTextArea Placeholder="Description" Style="margin:10px;" />
+                <RadzenTextBox Placeholder="Title" @bind-Value="model.Title" Style="margin:10px;" />
+                <Radzen.Blazor.RadzenTextArea Placeholder="Description" @bind-Value="model.Description" Style="margin:10px;" />
                 <input type="file" Style="margin:10px;" @ref="inputReference" @onchange="async () => await chooseFileAsync()" />
                 <img style="width:100%;margin:10px;" src="@imageContent" />
                 <hr />
-                <RadzenButton ButtonStyle="Radzen.ButtonStyle.Success" Style="margin:5px" class="btn-block" Text="Insert" />
+                <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="Radzen.ButtonStyle.Success" Disabled="isBusy" Style="margin:5px" class="btn-block" Text="Insert" />
             </RadzenCard>
         </EditForm>
-        
+
     </div>
 </div>
 
 @code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
     PlanRequest model = new PlanRequest();
     System.IO.Stream fileStream = null;
     string imageContent = string.Empty;
     string fileName = string.Empty;
+
+    bool isBusy = false;
 
     ElementReference inputReference;
 
@@ -43,6 +49,7 @@
     {
         var file = (await fileReaderService.CreateReference(inputReference).EnumerateFilesAsync()).FirstOrDefault();
 
+
         var fileInfo = await file.ReadFileInfoAsync();
         string extension = System.IO.Path.GetExtension(fileInfo.Name);
         var allowedExtensions = new string[] { ".jpg", ".png", ".bmp" };
@@ -50,6 +57,7 @@
         {
             message = "That chosen file is not a valid image file";
             messageType = Models.AlertMessageType.Warning;
+            fileName = string.Empty;
             return;
         }
         else
@@ -57,11 +65,46 @@
             message = null;
         }
 
-        using(var memoryStream = await file.CreateMemoryStreamAsync())
+        using (var memoryStream = await file.CreateMemoryStreamAsync())
         {
             fileStream = new System.IO.MemoryStream(memoryStream.ToArray());
+            fileName = fileInfo.Name;
             imageContent = $"data:{fileInfo.Type};base64, {Convert.ToBase64String(memoryStream.ToArray())}";
         }
     }
 
+    async Task PostPlanAsync()
+    {
+        isBusy = true;
+
+
+        var userState = authenticationState.Result;
+        if (!string.IsNullOrEmpty(fileName))
+        {
+            plansService.AccessToken = userState.User.FindFirst("AccessToken").Value;
+        }
+        else
+        {
+            message = "You have to choose a imge file";
+            messageType = Models.AlertMessageType.Warning;
+            return;
+        }
+
+        model.CoverFile = fileStream;
+        model.FileName = fileName;
+        var result = await plansService.PostPlanAsync(model);
+
+        if (result.IsSuccess)
+        {
+            navigationManager.NavigateTo("/plans");
+        }
+        else
+        {
+            message = result.Message;
+            messageType = Models.AlertMessageType.Warning;
+        }
+
+        isBusy = false;
+
+    }
 }
