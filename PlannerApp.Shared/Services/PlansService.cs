@@ -49,6 +49,18 @@ namespace PlannerApp.Shared.Services
             return response.Result;
         }
 
+        /// <summary>
+        /// Return plan by id
+        /// </summary>
+        /// <param name="model"> object represents the plan to be added</param>
+        /// <returns></returns>
+        public async Task<PlanSingleResponse> GetPlanByIdAsync(string id)
+        {
+            var response = await client.GetProtectedAsync<PlanSingleResponse>($"{_baseUrl}/api/plans/{id}");
+            return response.Result;
+        }
+
+
 
         /// <summary>
         /// Post a plan to thr API
@@ -57,10 +69,37 @@ namespace PlannerApp.Shared.Services
         /// <returns></returns>
         public async Task<PlanSingleResponse> PostPlanAsync(PlanRequest model)
         {
+            var formKeyValues = new List<FormKeyValue>()
+            {
+                new StringFormKeyValue("Title",model.Title),
+                new StringFormKeyValue("Description",model.Description),
+            };
+            if (model.CoverFile != null)
+                formKeyValues.Add(new FileFormKeyValue("CoverFile", model.CoverFile, model.FileName));
             var response = await client.SendFormProtectedAsync<PlanSingleResponse>($"{_baseUrl}/api/plans",
-                ActionType.POST, new StringFormKeyValue("Title", model.Title),
-                new StringFormKeyValue("Description", model.Description),
-                new FileFormKeyValue("CoverFile", model.CoverFile, model.FileName));
+                ActionType.POST, formKeyValues.ToArray());
+
+            return response.Result;
+        }
+
+        /// <summary>
+        /// Edit a plan to thr API
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        public async Task<PlanSingleResponse> EditPlanAsync(PlanRequest model)
+        {
+            var formKeyValues = new List<FormKeyValue>()
+            {
+                new StringFormKeyValue("Id",model.Id),
+                new StringFormKeyValue("Title",model.Title),
+                new StringFormKeyValue("Description",model.Description),
+            };
+            if (model.CoverFile != null)
+                formKeyValues.Add(new FileFormKeyValue("CoverFile", model.CoverFile, model.FileName));
+
+            var response = await client.SendFormProtectedAsync<PlanSingleResponse>($"{_baseUrl}/api/plans",
+                ActionType.PUT, formKeyValues.ToArray());
 
             return response.Result;
         }
