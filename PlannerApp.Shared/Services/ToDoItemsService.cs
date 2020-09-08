@@ -58,7 +58,7 @@ namespace PlannerApp.Shared.Services
         /// <returns></returns>
         public async Task<ToDoItemSingleResponse> ChangeItemStateAsync(string id)
         {
-            var response = await client.PostProtectedAsync<ToDoItemSingleResponse>($"{_baseUrl}/api/todoitems/{id}", null);
+            var response = await client.PutProtectedAsync<ToDoItemSingleResponse>($"{_baseUrl}/api/todoitems/{id}", null);
             return response.Result;
         }
 
