@@ -36,7 +36,7 @@
                 <table>
                     <tr>
                         <td>
-                            <RadzenButton Text="*" Disabled="isBusy" ButtonStyle="Radzen.ButtonStyle.Info" ButtonType="Radzen.ButtonType.Button" />
+                            <RadzenButton Text="*" Disabled="isBusy" @onclick="clearSelection" ButtonStyle="Radzen.ButtonStyle.Info" ButtonType="Radzen.ButtonType.Button" />
                         </td>
                         <td>
                             <RadzenTextBox Placeholder="Item description..." @bind-Value="itemModel.Description" />
@@ -47,15 +47,19 @@
                     </tr>
                     @foreach (var item in items)
                     {
-                        <tr>
+                        string descriptionStyle = item.IsDone ? "text-decoration-line: line-through" : "text-decoration-line: none";
+                        string rowStyle = selectedItem == item ? "cursor:pointer;background:lightblue" : "cursor:pointer;background:white";
+                        <tr style="@rowStyle" @onclick="() => selectItem(item)">
                             <td>
                                 <RadzenCheckBox @bind-Value="item.IsDone" @onclick="async () => await changeItemStatusAsync(item.Id)"/>
                             </td>
                             <td>
-                                <span>@item.Description</span>
+                                <span style="@descriptionStyle">@item.Description</span>
                             </td>
                             <td>
-                                <RadzenButton Text="X" ButtonStyle="Radzen.ButtonStyle.Danger" Disabled="isBusy" ButtonType="Radzen.ButtonType.Button" />
+                                <RadzenButton Text="X" ButtonStyle="Radzen.ButtonStyle.Danger" 
+                                              Disabled="isBusy" ButtonType="Radzen.ButtonType.Button" 
+                                              Click="async () => await removeItem(item)" />
                             </td>
                         </tr>
                     }
@@ -191,6 +195,7 @@
     ToDoItem selectedItem = null;
 
     ToDoItemRequest itemModel = new ToDoItemRequest();
+    string itemMessage = string.Empty;
 
     async Task insertItemAsync()
     {
@@ -209,13 +214,32 @@
         isBusy = false;
     }
 
+    //Edit an item
+    async Task editItemAsync()
+    {
+        isBusy = true;
+        itemModel.PlanId = Id;
+        var result = await itemsService.EditItemAsync(itemModel);
+        if (result.IsSuccess)
+        {
+            var editedItem = items.SingleOrDefault(items => items.Id == result.Record.Id);
+            editedItem.Description = result.Record.Description;
+        }
+        else
+        {
+            //TODO: Show error alert
+        }
+
+        isBusy = false;
+    }
+
     async Task submitItemFormAsync()
     {
         if (selectedItem == null)
             await insertItemAsync();
         else
         {
-            //Update
+            await editItemAsync();
         }
     }
 
@@ -231,5 +255,39 @@
         }
         isBusy = false;
     }
+
+    //Select item
+    void selectItem(ToDoItem item)
+    {
+        selectedItem = item;
+        itemModel.Id = item.Id;
+        itemModel.Description = item.Description;
+        //TODO: Show alert that the item cannot be edited
+    }
+
+    void clearSelection()
+    {
+        selectedItem = null;
+        itemModel.Id = null;
+        itemModel.Description = null;
+    }
+
+    async Task removeItem(ToDoItem item)
+    {
+        isBusy = true;
+
+        var result = await itemsService.DeleteItemAsync(item.Id);
+        if (result.IsSuccess)
+        {
+            items.Remove(item);
+        }
+        else
+        {
+            itemMessage = result.Message;
+        }
+
+        isBusy = false;
+    }
+
     #endregion
 }
