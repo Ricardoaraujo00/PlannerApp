@@ -45,11 +45,13 @@ else
                     @if (selectedPlanId == plan.Id)
                     {
                         <div class="row">
-                            <RadzenButton ButtonStyle="Radzen.ButtonStyle.Info" Text="Cofirm" class="btn-block" 
-                                          Click="async () => await deletePlanAsync()" Style="margin:15px;"/>
+                            <div class="col-12">
+                                <RadzenButton ButtonStyle="Radzen.ButtonStyle.Info" Text="Cofirm" class="btn-block"
+                                          Click="async () => await deletePlanAsync()" Style="margin:15px;" />
+                            </div>
                         </div>
                     }
-                </RadzenCard>
+</RadzenCard>
             </div>
         }
 

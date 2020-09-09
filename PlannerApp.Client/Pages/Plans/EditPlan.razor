@@ -22,7 +22,7 @@
                 <img style="width:100%;margin:10px;" src="@imageContent" />
                 <hr />
                 <RadzenButton ButtonType="Radzen.ButtonType.Submit" ButtonStyle="Radzen.ButtonStyle.Success" 
-                              Disabled="isBusy" Style="margin:5px" class="btn-block" Text="Edit" />
+                              Disabled="isBusy" Style="margin:5px" class="btn btn-block" Text="Edit" />
             </RadzenCard>
         </EditForm>
 
@@ -30,13 +30,14 @@
     <div class="col-6">
         <RadzenCard>
             <h2>Plan Items</h2>
+            <AlertMessage Message="@itemMessage" MessageType="Models.AlertMessageType.Warning" />
             <EditForm Model="itemModel" OnValidSubmit="async () => await submitItemFormAsync()">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
                 <table>
                     <tr>
                         <td>
-                            <RadzenButton Text="*" Disabled="isBusy" @onclick="clearSelection" ButtonStyle="Radzen.ButtonStyle.Info" ButtonType="Radzen.ButtonType.Button" />
+                            <RadzenButton Text="*" Disabled="isBusy" Click="clearSelection" ButtonStyle="Radzen.ButtonStyle.Info" ButtonType="Radzen.ButtonType.Button" />
                         </td>
                         <td>
                             <RadzenTextBox Placeholder="Item description..." @bind-Value="itemModel.Description" />
@@ -51,14 +52,14 @@
                         string rowStyle = selectedItem == item ? "cursor:pointer;background:lightblue" : "cursor:pointer;background:white";
                         <tr style="@rowStyle" @onclick="() => selectItem(item)">
                             <td>
-                                <RadzenCheckBox @bind-Value="item.IsDone" @onclick="async () => await changeItemStatusAsync(item.Id)"/>
+                                <RadzenCheckBox @bind-Value="item.IsDone" @onclick="async () => await changeItemStatusAsync(item.Id)" />
                             </td>
                             <td>
                                 <span style="@descriptionStyle">@item.Description</span>
                             </td>
                             <td>
-                                <RadzenButton Text="X" ButtonStyle="Radzen.ButtonStyle.Danger" 
-                                              Disabled="isBusy" ButtonType="Radzen.ButtonType.Button" 
+                                <RadzenButton Text="X" ButtonStyle="Radzen.ButtonStyle.Danger"
+                                              Disabled="isBusy" ButtonType="Radzen.ButtonType.Button"
                                               Click="async () => await removeItem(item)" />
                             </td>
                         </tr>
@@ -122,9 +123,6 @@
     {
         isBusy = true;
 
-
-        var userState = authenticationState.Result;
-        plansService.AccessToken = userState.User.FindFirst("AccessToken").Value;
 
         model.CoverFile = fileStream;
         model.FileName = fileName;
@@ -208,7 +206,7 @@
         }
         else
         {
-            //TODO: Show error alert: 
+            itemMessage = result.Message;
         }
 
         isBusy = false;
@@ -227,7 +225,7 @@
         }
         else
         {
-            //TODO: Show error alert
+            itemMessage = result.Message;
         }
 
         isBusy = false;
@@ -251,7 +249,7 @@
         var result = await itemsService.ChangeItemStateAsync(itemId);
         if (!result.IsSuccess)
         {
-            //TODO: Show alert message
+            itemMessage = result.Message;
         }
         isBusy = false;
     }
@@ -262,7 +260,10 @@
         selectedItem = item;
         itemModel.Id = item.Id;
         itemModel.Description = item.Description;
-        //TODO: Show alert that the item cannot be edited
+        if (item.IsDone)
+            itemMessage = "Checked cannot be edited";
+        else
+            itemMessage = null;
     }
 
     void clearSelection()
